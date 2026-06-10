@@ -1,0 +1,115 @@
+<div class="container">
+
+  <!--  HEADER -->
+  <div class="header">
+    <h2>Dashboard</h2>
+
+    <div class="right-section">
+      <span class="role-badge">{{ role }}</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- USER PROFILE -->
+  <div *ngIf="role === 'USER'" class="card">
+
+    <h3>Profile</h3>
+
+    <p><strong>ID:</strong> {{ user?.id }}</p>
+    <p><strong>Name:</strong> {{ user?.name }}</p>
+    <p><strong>Username:</strong> {{ user?.username }}</p>
+    <p><strong>Role:</strong>  User </p>
+
+    <button (click)="startEditUser()">Edit Profile</button>
+
+    <!--  EDIT FORM -->
+    <div *ngIf="showEditForm" class="form">
+      <input [(ngModel)]="editingUser.name" placeholder="Name" />
+      <input [(ngModel)]="editingUser.username" placeholder="Username" />
+
+      <div class="btn-group">
+        <button (click)="updateUserDetails()">Save</button>
+        <button (click)="cancelEditUser()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!--  ORDERS SECTION -->
+  <div *ngIf="role === 'USER'" class="card">
+
+    <div class="section-header">
+      <h3>My Orders</h3>
+      <button (click)="startAddOrder()">+ Add Order</button>
+    </div>
+
+    <!--  ADD ORDER -->
+    <div *ngIf="showAddOrderForm" class="form">
+      <input [(ngModel)]="newOrder.product" placeholder="Product" />
+      <input type="number" [(ngModel)]="newOrder.price" placeholder="Price" />
+
+      <div class="btn-group">
+        <button (click)="addOrder()">Add</button>
+        <button (click)="cancelAddOrder()">Cancel</button>
+      </div>
+    </div>
+
+    <!--  ORDER LIST -->
+    <ul class="list">
+      <li *ngFor="let order of orders">
+        {{ order.product }} - ₹{{ order.price }}
+        <button (click)="deleteOrder(order.id)">Delete</button>
+      </li>
+    </ul>
+  </div>
+
+  <!--  ADMIN PANEL -->
+  <!--  ADMIN DASHBOARD -->
+<div *ngIf="role?.includes('ADMIN') && users.length > 0">
+
+  <h2>Admin Dashboard</h2>
+
+  <!--  USERS TABLE -->
+  <h3>Users</h3>
+
+  <table class="table">
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Username</th>
+      <th>Role</th>
+      <th>Actions</th>
+    </tr>
+
+    <tr *ngFor="let u of users">
+      <td>{{ u?.id }}</td>
+<td>{{ u?.name || 'N/A' }}</td>
+<td>{{ u?.username?.trim() }}</td>
+<td>{{ u?.role }}</td>
+
+      <td>
+        <button (click)="viewOrders(u)">View Orders</button>
+        <button (click)="deleteUser(u.id)">Delete</button>
+      </td>
+    </tr>
+  </table>
+
+</div>
+
+<!--  ORDERS SECTION (DYNAMIC PER USER) -->
+<div *ngIf="selectedUser" class="card">
+
+  <h3>
+    Orders of {{ selectedUser?.name }}
+  </h3>
+
+  <button (click)="clearOrders()">Close</button>
+
+  <ul class="list">
+    <li *ngFor="let order of selectedOrders">
+      {{ order.product }} - ₹{{ order.price }}
+
+      <button (click)="deleteOrderForAdmin(order.id)">Delete</button>
+    </li>
+  </ul>
+
+</div>

@@ -1,0 +1,23 @@
+<div>
+  <h2>Register</h2>
+<input [value]="registerData.name" (input)="registerData.name = $event.target.value" placeholder="Name" />
+  <input [value]="registerData.username" (input)="registerData.username = $event.target.value" placeholder="Username" />
+  <input [value]="registerData.email" (input)="registerData.email = $event.target.value" placeholder="Email" />
+  <input [value]="registerData.password" type="password" (input)="registerData.password = $event.target.value" placeholder="Password" />
+
+  <button type="button" (click)="register()" [disabled]="loading">
+    {{ loading ? 'Registering…' : 'Register' }}
+  </button>
+
+  <p>
+    Already have an account? <a routerLink="/">Login</a>
+  </p>
+
+  <div *ngIf="successMessage" class="register-success">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="register-error">
+    {{ errorMessage }}
+  </div>
+</div>

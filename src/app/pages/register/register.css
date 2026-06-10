@@ -1,0 +1,92 @@
+/* ✅ Full page center */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f3f4f6;
+}
+
+/* ✅ Container */
+div {
+  max-width: 400px;
+  margin: 60px auto;
+  padding: 25px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ✅ Title */
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* ✅ Inputs */
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  font-size: 14px;
+}
+
+/* ✅ Input focus */
+input:focus {
+  border-color: #3b82f6;
+}
+
+/* ✅ Button */
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* ✅ Button hover */
+button:hover {
+  background: #2563eb;
+}
+
+/* ✅ Disabled button */
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* ✅ Link text */
+p {
+  text-align: center;
+  margin-top: 15px;
+}
+
+/* ✅ Link */
+a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ✅ Success message */
+.register-success {
+  color: green;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* ✅ Error message */
+.register-error {
+  color: red;
+  margin-top: 10px;
+  text-align: center;
+}

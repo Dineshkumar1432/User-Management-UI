@@ -1,0 +1,10 @@
+<h3>My Orders</h3>
+
+<button (click)="addOrder()">Add Order</button>
+
+<ul>
+  <li *ngFor="let order of orders">
+    {{order.product}} - {{order.price}}
+    <button (click)="deleteOrder(order.id)">Delete</button>
+  </li>
+</ul>

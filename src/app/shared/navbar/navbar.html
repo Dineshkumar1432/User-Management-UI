@@ -1,0 +1,16 @@
+<div *ngIf="!getRole()">
+  <a routerLink="/">Login</a>
+  <a routerLink="/register">Register</a>
+</div>
+
+<!-- Admin -->
+<div *ngIf="getRole() === 'ADMIN'">
+  <a routerLink="/users">Manage Users</a>
+  <a routerLink="/dashboard">Dashboard</a>
+  <button type="button" (click)="logout()">Logout</button>
+</div>
+
+<!-- User -->
+<!-- <div *ngIf="getRole() === 'USER'">
+  <a [routerLink]="['/user-orders', getUserId()]">My Orders</a>
+</div> -->
