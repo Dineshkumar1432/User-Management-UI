@@ -1,115 +1,160 @@
 <div class="container">
 
-  <!--  HEADER -->
+  <!-- HEADER -->
   <div class="header">
     <h2>Dashboard</h2>
 
     <div class="right-section">
-      <span class="role-badge">{{ role }}</span>
-      <button class="logout-btn" (click)="logout()">Logout</button>
+      <p-tag [value]="role"></p-tag>
+      <button pButton label="Logout" icon="pi pi-sign-out"
+        class="p-button-danger" (click)="logout()">
+      </button>
     </div>
   </div>
 
   <!-- USER PROFILE -->
-  <div *ngIf="role === 'USER'" class="card">
-
-    <h3>Profile</h3>
+  <p-card *ngIf="role === 'USER' && user" header="Profile">
 
     <p><strong>ID:</strong> {{ user?.id }}</p>
     <p><strong>Name:</strong> {{ user?.name }}</p>
     <p><strong>Username:</strong> {{ user?.username }}</p>
-    <p><strong>Role:</strong>  User </p>
 
-    <button (click)="startEditUser()">Edit Profile</button>
+    <button pButton label="Edit Profile"
+      icon="pi pi-user-edit"
+      (click)="startEditUser()">
+    </button>
 
-    <!--  EDIT FORM -->
-    <div *ngIf="showEditForm" class="form">
-      <input [(ngModel)]="editingUser.name" placeholder="Name" />
-      <input [(ngModel)]="editingUser.username" placeholder="Username" />
+  </p-card>
 
-      <div class="btn-group">
-        <button (click)="updateUserDetails()">Save</button>
-        <button (click)="cancelEditUser()">Cancel</button>
-      </div>
-    </div>
-  </div>
+  <!-- EDIT DIALOG -->
+  <p-dialog header="Edit Profile"
+            [(visible)]="showEditForm"
+            *ngIf="editingUser">
 
-  <!--  ORDERS SECTION -->
-  <div *ngIf="role === 'USER'" class="card">
+    <input pInputText [(ngModel)]="editingUser.name" placeholder="Name" />
+    <br><br>
 
-    <div class="section-header">
-      <h3>My Orders</h3>
-      <button (click)="startAddOrder()">+ Add Order</button>
-    </div>
+    <input pInputText [(ngModel)]="editingUser.username" placeholder="Username" />
 
-    <!--  ADD ORDER -->
-    <div *ngIf="showAddOrderForm" class="form">
-      <input [(ngModel)]="newOrder.product" placeholder="Product" />
-      <input type="number" [(ngModel)]="newOrder.price" placeholder="Price" />
+    <br><br>
+    <button pButton label="Save"
+      (click)="updateUserDetails()">
+    </button>
 
-      <div class="btn-group">
-        <button (click)="addOrder()">Add</button>
-        <button (click)="cancelAddOrder()">Cancel</button>
-      </div>
-    </div>
+  </p-dialog>
 
-    <!--  ORDER LIST -->
-    <ul class="list">
-      <li *ngFor="let order of orders">
-        {{ order.product }} - ₹{{ order.price }}
-        <button (click)="deleteOrder(order.id)">Delete</button>
-      </li>
-    </ul>
-  </div>
+  <!-- ORDERS -->
+  <p-card *ngIf="role === 'USER'" header="My Orders">
 
-  <!--  ADMIN PANEL -->
-  <!--  ADMIN DASHBOARD -->
-<div *ngIf="role?.includes('ADMIN') && users.length > 0">
+    <button pButton label="Add Order"
+      icon="pi pi-plus"
+      (click)="startAddOrder()">
+    </button>
 
-  <h2>Admin Dashboard</h2>
+    <p-table [value]="orders">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Product</th>
+          <th>Price</th>
+          <th>Action</th>
+        </tr>
+      </ng-template>
 
-  <!--  USERS TABLE -->
-  <h3>Users</h3>
+      <ng-template pTemplate="body" let-order>
+        <tr>
+          <td>{{ order.product }}</td>
+          <td>₹{{ order.price }}</td>
+          <td>
+            <button pButton
+              icon="pi pi-trash"
+              class="p-button-danger"
+              (click)="deleteOrder(order.id)">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
 
-  <table class="table">
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Username</th>
-      <th>Role</th>
-      <th>Actions</th>
-    </tr>
+  </p-card>
 
-    <tr *ngFor="let u of users">
-      <td>{{ u?.id }}</td>
-<td>{{ u?.name || 'N/A' }}</td>
-<td>{{ u?.username?.trim() }}</td>
-<td>{{ u?.role }}</td>
+  <!-- ADD ORDER -->
+  <p-dialog header="Add Order"
+            [(visible)]="showAddOrderForm">
 
-      <td>
-        <button (click)="viewOrders(u)">View Orders</button>
-        <button (click)="deleteUser(u.id)">Delete</button>
-      </td>
-    </tr>
-  </table>
+    <input pInputText [(ngModel)]="newOrder.product" placeholder="Product" />
+    <br><br>
 
-</div>
+    <input pInputText type="number"
+      [(ngModel)]="newOrder.price"
+      placeholder="Price" />
 
-<!--  ORDERS SECTION (DYNAMIC PER USER) -->
-<div *ngIf="selectedUser" class="card">
+    <br><br>
+    <button pButton label="Add"
+      (click)="addOrder()">
+    </button>
 
-  <h3>
-    Orders of {{ selectedUser?.name }}
-  </h3>
+  </p-dialog>
 
-  <button (click)="clearOrders()">Close</button>
+  <!-- ADMIN USERS -->
+  <p-card *ngIf="role.includes('ADMIN')" header="Users">
 
-  <ul class="list">
-    <li *ngFor="let order of selectedOrders">
-      {{ order.product }} - ₹{{ order.price }}
+    <p-table [value]="users">
 
-      <button (click)="deleteOrderForAdmin(order.id)">Delete</button>
-    </li>
-  </ul>
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Username</th>
+          <th>Role</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-u>
+        <tr>
+          <td>{{ u.id }}</td>
+          <td>{{ u.name }}</td>
+          <td>{{ u.username }}</td>
+          <td><p-tag [value]="u.role"></p-tag></td>
+          <td>
+            <button pButton label="Orders"
+              (click)="viewOrders(u)">
+            </button>
+
+            <button pButton
+              icon="pi pi-trash"
+              class="p-button-danger"
+              (click)="deleteUser(u.id)">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+
+  </p-card>
+
+  <!-- ADMIN ORDERS -->
+  <p-dialog header="User Orders"
+            [(visible)]="showAdminOrders">
+
+    <p-table [value]="selectedOrders">
+
+      <ng-template pTemplate="body" let-order>
+        <tr>
+          <td>{{ order.product }}</td>
+          <td>{{ order.price }}</td>
+          <td>
+            <button pButton
+              icon="pi pi-trash"
+              (click)="deleteOrderForAdmin(order.id)">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+
+  </p-dialog>
 
 </div>

@@ -1,23 +1,59 @@
-<div>
-  <h2>Register</h2>
-<input [value]="registerData.name" (input)="registerData.name = $event.target.value" placeholder="Name" />
-  <input [value]="registerData.username" (input)="registerData.username = $event.target.value" placeholder="Username" />
-  <input [value]="registerData.email" (input)="registerData.email = $event.target.value" placeholder="Email" />
-  <input [value]="registerData.password" type="password" (input)="registerData.password = $event.target.value" placeholder="Password" />
+<div class="register-container">
 
-  <button type="button" (click)="register()" [disabled]="loading">
-    {{ loading ? 'Registering…' : 'Register' }}
-  </button>
+  <p-card header="Register" class="register-card">
 
-  <p>
-    Already have an account? <a routerLink="/">Login</a>
-  </p>
+    <div class="field">
+      <label>Name</label>
+      <input pInputText
+             [(ngModel)]="registerData.name"
+             placeholder="Enter name" />
+    </div>
 
-  <div *ngIf="successMessage" class="register-success">
-    {{ successMessage }}
-  </div>
+    <div class="field">
+      <label>Username</label>
+      <input pInputText
+             [(ngModel)]="registerData.username"
+             placeholder="Enter username" />
+    </div>
 
-  <div *ngIf="errorMessage" class="register-error">
-    {{ errorMessage }}
-  </div>
+    <div class="field">
+      <label>Email</label>
+      <input pInputText
+             [(ngModel)]="registerData.email"
+             placeholder="Enter email" />
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input pInputText
+             type="password"
+             [(ngModel)]="registerData.password"
+             placeholder="Enter password" />
+    </div>
+
+    <button pButton
+            label="{{ loading ? 'Registering…' : 'Register' }}"
+            class="p-button-success register-btn"
+            (click)="register()"
+            [disabled]="loading">
+    </button>
+
+    <p class="login-link">
+      Already have an account?
+      <a routerLink="/login">Login</a>
+    </p>
+
+    <p-message *ngIf="successMessage"
+               severity="success"
+               text="{{ successMessage }}">
+    </p-message>
+
+   
+    <p-message *ngIf="errorMessage"
+               severity="error"
+               text="{{ errorMessage }}">
+    </p-message>
+
+  </p-card>
+
 </div>

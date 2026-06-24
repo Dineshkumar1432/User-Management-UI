@@ -1,16 +1,35 @@
 import { Component } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+
 import { AuthService } from '../../services/auth';
+
+
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
 
 @Component({
   standalone: true,
   selector: 'app-login',
-  imports: [NgIf, RouterLink],
+  imports: [
+    NgIf,
+    RouterLink,
+    FormsModule,
+
+    // ✅ PrimeNG modules
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    MessageModule
+  ],
   templateUrl: './login.html',
   styleUrls: ['./login.css'],
 })
 export class Login {
+
   loginData = {
     usernameOrEmail: '',
     password: ''
@@ -34,17 +53,13 @@ export class Login {
       return;
     }
 
-    const payload = {
-      username,
-      password
-    };
+    const payload = { username, password };
 
     this.auth.login(payload).subscribe({
       next: (res: any) => {
-        console.log(res);
 
         if (!res?.token || !res?.role || !res?.userId) {
-          this.errorMessage = 'Login succeeded but the server returned incomplete user data.';
+          this.errorMessage = 'Incomplete user data received.';
           return;
         }
 
@@ -55,18 +70,12 @@ export class Login {
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        console.error(err);
         const serverMessage = err.error?.message;
-        const statusText = err.statusText ? ` (${err.status} ${err.statusText})` : '';
 
         if (serverMessage?.includes('Bad credentials')) {
-          this.errorMessage = 'Invalid username/email or password.';
-        } else if (serverMessage?.includes('toUpperCase') || serverMessage?.includes('getRole()')) {
-          this.errorMessage = 'Login failed because your account has no role assigned. Please register again or contact the administrator.';
+          this.errorMessage = 'Invalid username or password.';
         } else {
-          this.errorMessage = serverMessage
-            ? `${serverMessage}${statusText}`
-            : err.message || 'Login failed';
+          this.errorMessage = serverMessage || 'Login failed';
         }
       },
       complete: () => {

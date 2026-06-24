@@ -1,19 +1,39 @@
+<div class="login-container">
 
-<div>
-  <h2>Login</h2>
+  <p-card header="Login" class="login-card">
 
-  <input [value]="loginData.usernameOrEmail" (input)="loginData.usernameOrEmail = $event.target.value" placeholder="Username" />
-  <input [value]="loginData.password" type="password" (input)="loginData.password = $event.target.value" placeholder="Password" />
+    <div class="field">
+      <label>Username </label>
+      <input pInputText
+             [(ngModel)]="loginData.usernameOrEmail"
+             placeholder="Enter username" />
+    </div>
 
-  <button type="button" (click)="login()" [disabled]="loading">
-    {{ loading ? 'Signing in…' : 'Login' }}
-  </button>
+    <div class="field">
+      <label>Password</label>
+      <input pInputText
+             type="password"
+             [(ngModel)]="loginData.password"
+             placeholder="Enter password" />
+    </div>
 
-  <p>
-    Don't have an account? <a routerLink="/register">Register</a>
-  </p>
+    <button pButton
+            label="{{ loading ? 'Signing in…' : 'Login' }}"
+            class="p-button-primary login-btn"
+            (click)="login()"
+            [disabled]="loading">
+    </button>
 
-  <div *ngIf="errorMessage" class="login-error">
-    {{ errorMessage }}
-  </div>
+    <p class="register-link">
+      Don't have an account?
+      <a routerLink="/register">Register</a>
+    </p>
+
+    <p-message *ngIf="errorMessage"
+               severity="error"
+               text="{{ errorMessage }}">
+    </p-message>
+
+  </p-card>
+
 </div>

@@ -2,6 +2,15 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ChangeDetectorRef } from '@angular/core';
+
+//  PrimeNG Modules
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { DialogModule } from 'primeng/dialog';
 
 import { UserService } from '../../services/user';
 import { OrderService } from '../../services/order';
@@ -9,7 +18,17 @@ import { OrderService } from '../../services/order';
 @Component({
   standalone: true,
   selector: 'app-dashboard',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    TableModule,
+    TagModule,
+    DialogModule
+  ],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
 })
@@ -20,15 +39,19 @@ export class Dashboard implements OnInit {
   role: string = '';
   userId: number = 0;
 
-  user: any = null;              // start as null (prevents NG0100)
+  user: any = null;
   users: any[] = [];
   orders: any[] = [];
 
   selectedUser: any = null;
   selectedOrders: any[] = [];
 
-  editingUser: any = null;
+ 
+  editingUser: any = {};
   showEditForm = false;
+
+ 
+  showAdminOrders = false;
 
   showAddOrderForm = false;
   isAddingOrder = false;
@@ -41,10 +64,10 @@ export class Dashboard implements OnInit {
   constructor(
     private userService: UserService,
     private orderService: OrderService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
-  // INIT
   ngOnInit() {
 
     if (!isPlatformBrowser(this.platformId)) return;
@@ -57,9 +80,9 @@ export class Dashboard implements OnInit {
     }
 
     this.role = (localStorage.getItem('role') || '').toUpperCase().trim();
-    this.userId = Number(localStorage.getItem('userId'));
+    const storedUserId = localStorage.getItem('userId');
 
-    console.log("ROLE:", this.role);
+    this.userId = storedUserId ? parseInt(storedUserId, 10) : -1;
 
     if (this.role === 'USER') {
       this.loadUserDetails();
@@ -71,13 +94,13 @@ export class Dashboard implements OnInit {
     }
   }
 
-  //  USER PROFILE
+  // USER DETAILS
   loadUserDetails() {
     this.userService.getUserById(this.userId).subscribe({
       next: (res) => {
-        this.user = { ...res };   // new reference (important)
-      },
-      error: (err) => console.error(err)
+        this.user = { ...res };
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -85,9 +108,9 @@ export class Dashboard implements OnInit {
   loadUserOrders() {
     this.orderService.getOrdersByUser(this.userId).subscribe({
       next: (res: any) => {
-        this.orders = Array.isArray(res) ? [...res] : [];  //  safe copy
-      },
-      error: (err) => console.error(err)
+        this.orders = Array.isArray(res) ? [...res] : [];
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -95,113 +118,74 @@ export class Dashboard implements OnInit {
   loadUsers() {
     this.userService.getUsers().subscribe({
       next: (res: any) => {
-        console.log("USERS:", res);
         this.users = Array.isArray(res) ? [...res] : [];
-      },
-      error: (err) => console.error(err)
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  // VIEW USER ORDERS (ADMIN)
+  
   viewOrders(user: any) {
     this.selectedUser = user;
+    this.showAdminOrders = true;
 
     this.orderService.getOrdersByUser(user.id).subscribe({
       next: (res: any) => {
         this.selectedOrders = Array.isArray(res) ? [...res] : [];
-      },
-      error: (err) => console.error(err)
+      }
     });
   }
 
   clearOrders() {
     this.selectedUser = null;
     this.selectedOrders = [];
+    this.showAdminOrders = false;
   }
 
-  // DELETE ORDER (ADMIN)
   deleteOrderForAdmin(orderId: number) {
     if (!this.selectedUser) return;
 
     this.orderService.deleteOrder(this.selectedUser.id, orderId).subscribe({
-      next: () => this.viewOrders(this.selectedUser),
-      error: (err) => console.error(err)
+      next: () => this.viewOrders(this.selectedUser)
     });
   }
 
   //  EDIT PROFILE
   startEditUser() {
-    this.editingUser = { ...this.user };
+    this.editingUser = { ...this.user }; 
     this.showEditForm = true;
   }
 
-  cancelEditUser() {
-    this.editingUser = null;
-    this.showEditForm = false;
-  }
-
   updateUserDetails() {
-    if (!this.editingUser) return;
-
     this.userService.updateUser(this.userId, this.editingUser).subscribe({
       next: () => {
-        //  instant UI update (no reload issue)
         this.user = { ...this.editingUser };
-
-        this.editingUser = null;
         this.showEditForm = false;
-
-        alert("Profile updated");
-      },
-      error: (err) => console.error(err)
+      }
     });
   }
 
-  // ADD ORDER
+  //  ADD ORDER
   startAddOrder() {
     this.showAddOrderForm = true;
     this.newOrder = { product: '', price: 0 };
   }
 
-  cancelAddOrder() {
-    this.showAddOrderForm = false;
-  }
-
   addOrder() {
-
-    if (!this.newOrder.product || this.newOrder.price <= 0) {
-      alert("Enter valid details");
-      return;
-    }
-
-    if (this.isAddingOrder) return;
-    this.isAddingOrder = true;
-
     this.orderService.createOrder(this.userId, this.newOrder).subscribe({
-      next: (res: any) => {
-
-        //  instant UI update
-        this.orders.push(res);
-
-        this.newOrder = { product: '', price: 0 };
+      next: (res) => {
+        this.orders = [...this.orders, res];
         this.showAddOrderForm = false;
-
-        alert("Order added ");
-      },
-      error: (err) => console.error(err),
-      complete: () => this.isAddingOrder = false
+      }
     });
   }
 
-  // DELETE ORDER
+  // DELETE USER ORDER
   deleteOrder(orderId: number) {
-    if (!confirm("Delete this order?")) return;
-
     this.orderService.deleteOrder(this.userId, orderId).subscribe({
       next: () => {
         this.orders = this.orders.filter(o => o.id !== orderId);
-      },
-      error: (err) => console.error(err)
+      }
     });
   }
 
@@ -210,12 +194,11 @@ export class Dashboard implements OnInit {
     this.userService.deleteUser(userId).subscribe({
       next: () => {
         this.users = this.users.filter(u => u.id !== userId);
-      },
-      error: (err) => console.error(err)
+      }
     });
   }
 
-  // LOGOUT
+  //  LOGOUT
   logout() {
     localStorage.clear();
     this.router.navigate(['/login']);

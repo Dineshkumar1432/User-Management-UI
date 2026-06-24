@@ -1,18 +1,34 @@
 import { Component } from '@angular/core';
 import { NgIf } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { AuthService } from '../../services/auth';
+import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+
+import { AuthService } from '../../services/auth';
+
+
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
 
 @Component({
   standalone: true,
   selector: 'app-register',
-  imports: [NgIf, RouterLink, FormsModule],
+  imports: [
+    NgIf,
+    RouterLink,
+    FormsModule,
+
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    MessageModule
+  ],
   templateUrl: './register.html',
   styleUrls: ['./register.css'],
 })
 export class Register {
+
   registerData = {
     name: '',
     username: '',
@@ -31,23 +47,20 @@ export class Register {
     this.errorMessage = null;
     this.successMessage = null;
     this.loading = true;
+
     this.registerData.role = 'USER';
 
     this.auth.register(this.registerData).subscribe({
-    next: () => {
-  this.successMessage = 'Registration successful. Redirecting to login...';
+      next: () => {
+        this.successMessage = 'Registration successful. Redirecting to login...';
 
-  setTimeout(() => {
-    this.router.navigate(['/login']);   //  FIXED
-  }, 3000);
-},
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
+      },
       error: (err) => {
-        console.error(err);
         const serverMessage = err.error?.message;
-        const statusText = err.statusText ? ` (${err.status} ${err.statusText})` : '';
-        this.errorMessage = serverMessage
-          ? `${serverMessage}${statusText}`
-          : err.message || 'Registration failed';
+        this.errorMessage = serverMessage || 'Registration failed';
       },
       complete: () => {
         this.loading = false;
