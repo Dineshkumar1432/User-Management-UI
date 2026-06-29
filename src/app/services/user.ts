@@ -27,4 +27,18 @@ export class UserService {
   search(name: string) {
     return this.http.get(`${this.api}/search?name=${name}`);
   }
+ getUserImage(userId: number) {
+  const token = localStorage.getItem('token');
+
+  return this.http.get(
+    `http://localhost:8080/api/users/${userId}/photo`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      responseType: 'blob'
+    }
+  );
+
+}
 }

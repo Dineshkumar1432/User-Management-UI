@@ -15,6 +15,19 @@
   <!-- USER PROFILE -->
   <p-card *ngIf="role === 'USER' && user" header="Profile">
 
+    
+ <div style="text-align:center; margin-bottom:15px;">
+   <img
+ *ngIf="userImage" 
+[src]="userImage"
+  (error)="onImageError($event)"
+  width="120"
+  height="120"
+    style="width:80px; height:80px;  margin-left:0px;"
+/>
+  </div>
+
+
     <p><strong>ID:</strong> {{ user?.id }}</p>
     <p><strong>Name:</strong> {{ user?.name }}</p>
     <p><strong>Username:</strong> {{ user?.username }}</p>
@@ -29,7 +42,7 @@
   <!-- EDIT DIALOG -->
   <p-dialog header="Edit Profile"
             [(visible)]="showEditForm"
-            *ngIf="editingUser">
+            >
 
     <input pInputText [(ngModel)]="editingUser.name" placeholder="Name" />
     <br><br>
@@ -48,10 +61,20 @@
 
     <button pButton label="Add Order"
       icon="pi pi-plus"
+      [disabled]="isAddingOrder"
       (click)="startAddOrder()">
+      
     </button>
 
-    <p-table [value]="orders">
+    
+<p-table 
+    [value]="orders"
+    [scrollable]="true"
+    scrollHeight="250px"
+    [paginator]="true"
+    [rows]="5"
+    [rowsPerPageOptions]="[5,10,20]">
+
       <ng-template pTemplate="header">
         <tr>
           <th>Product</th>
@@ -68,7 +91,7 @@
             <button pButton
               icon="pi pi-trash"
               class="p-button-danger"
-              (click)="deleteOrder(order.id)">
+              (click)="deleteOrder(order.id); $event.stopPropagation()">
             </button>
           </td>
         </tr>
@@ -78,32 +101,57 @@
   </p-card>
 
   <!-- ADD ORDER -->
-  <p-dialog header="Add Order"
-            [(visible)]="showAddOrderForm">
+  
+<p-dialog header="Add Order"
+          [(visible)]="showAddOrderForm"
+          [modal]="true"
+          [dismissableMask]="true">
 
-    <input pInputText [(ngModel)]="newOrder.product" placeholder="Product" />
+  <div>
+
+    <input pInputText
+           name="product"
+           [(ngModel)]="newOrder.product"
+           placeholder="Product" />
+
     <br><br>
 
     <input pInputText type="number"
-      [(ngModel)]="newOrder.price"
-      placeholder="Price" />
+           name="price"
+           [(ngModel)]="newOrder.price"
+           placeholder="Price" />
 
     <br><br>
-    <button pButton label="Add"
-      (click)="addOrder()">
-    </button>
 
-  </p-dialog>
+  <button pButton
+  type="button"
+  label="Add"
+  [disabled]="isAddingOrder"
+  [loading]="isAddingOrder"
+  (click)="addOrder()">
+</button>
 
+  </div>
+
+</p-dialog>
   <!-- ADMIN USERS -->
   <p-card *ngIf="role.includes('ADMIN')" header="Users">
 
-    <p-table [value]="users">
+   
+<p-table 
+    [value]="users"
+    [scrollable]="true"
+    scrollHeight="450px"
+    [paginator]="true"
+    [rows]="5"
+    [rowsPerPageOptions]="[5,10,20]">
+
 
       <ng-template pTemplate="header">
         <tr>
+          <th>Image</th>
           <th>ID</th>
-          <th>Name</th>
+          <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
           <th>Username</th>
           <th>Role</th>
           <th>Actions</th>
@@ -112,6 +160,18 @@
 
       <ng-template pTemplate="body" let-u>
         <tr>
+          
+ 
+<td>
+  <img
+    [src]="u.imageUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'"
+    width="40"
+    height="40"
+    style="border-radius:50%; object-fit:cover;"
+    (error)="onImageError($event)">
+</td>
+
+
           <td>{{ u.id }}</td>
           <td>{{ u.name }}</td>
           <td>{{ u.username }}</td>
@@ -147,7 +207,7 @@
           <td>
             <button pButton
               icon="pi pi-trash"
-              (click)="deleteOrderForAdmin(order.id)">
+             (click)="deleteOrderForAdmin(order.id); $event.stopPropagation()">
             </button>
           </td>
         </tr>

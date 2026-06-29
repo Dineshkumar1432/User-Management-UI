@@ -14,13 +14,9 @@ export class AuthService {
     return this.http.post(`${this.api}/login`, data);
   }
 
-  register(data: any) {
-    const payload = {
-      ...data,
-      role: data.role ? data.role.toUpperCase() : 'USER'
-    };
-    return this.http.post(`${this.api}/register`, payload);
-  }
+ register(data: FormData) {
+  return this.http.post(`${this.api}/register`, data);
+}
 
   saveToken(token: string) {
     localStorage.setItem('token', token);

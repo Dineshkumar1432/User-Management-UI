@@ -30,6 +30,19 @@
              [(ngModel)]="registerData.password"
              placeholder="Enter password" />
     </div>
+    <div class="field">
+  <label>Profile Photo</label>
+
+  <input type="file"
+         (change)="onFileSelected($event)"
+         accept="image/*" />
+
+  <!-- Preview -->
+  <img *ngIf="previewUrl"
+       [src]="previewUrl"
+       width="120"
+       style="margin-top:10px; border-radius:8px;" />
+</div>
 
     <button pButton
             label="{{ loading ? 'Registering…' : 'Register' }}"

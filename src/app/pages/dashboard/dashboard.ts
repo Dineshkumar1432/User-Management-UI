@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ChangeDetectorRef } from '@angular/core';
 
-//  PrimeNG Modules
+// PrimeNG
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -21,7 +21,6 @@ import { OrderService } from '../../services/order';
   imports: [
     CommonModule,
     FormsModule,
-
     CardModule,
     ButtonModule,
     InputTextModule,
@@ -46,20 +45,19 @@ export class Dashboard implements OnInit {
   selectedUser: any = null;
   selectedOrders: any[] = [];
 
- 
   editingUser: any = {};
   showEditForm = false;
 
- 
   showAdminOrders = false;
 
   showAddOrderForm = false;
   isAddingOrder = false;
 
-  newOrder = {
-    product: '',
-    price: 0
-  };
+  isDeletingOrder = false; // NEW FIX
+
+  userImage: any = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+  newOrder = { product: '', price: 0 };
 
   constructor(
     private userService: UserService,
@@ -69,11 +67,9 @@ export class Dashboard implements OnInit {
   ) {}
 
   ngOnInit() {
-
     if (!isPlatformBrowser(this.platformId)) return;
 
     const token = localStorage.getItem('token');
-
     if (!token) {
       this.router.navigate(['/login']);
       return;
@@ -81,12 +77,12 @@ export class Dashboard implements OnInit {
 
     this.role = (localStorage.getItem('role') || '').toUpperCase().trim();
     const storedUserId = localStorage.getItem('userId');
-
     this.userId = storedUserId ? parseInt(storedUserId, 10) : -1;
 
     if (this.role === 'USER') {
       this.loadUserDetails();
       this.loadUserOrders();
+      this.loadUserImage();
     }
 
     if (this.role.includes('ADMIN')) {
@@ -96,109 +92,154 @@ export class Dashboard implements OnInit {
 
   // USER DETAILS
   loadUserDetails() {
-    this.userService.getUserById(this.userId).subscribe({
-      next: (res) => {
-        this.user = { ...res };
-        this.cdr.detectChanges();
+    this.userService.getUserById(this.userId).subscribe(res => {
+      this.user = res;
+      this.cdr.detectChanges();
+    });
+  }
+
+  loadUserImage() {
+    this.userService.getUserImage(this.userId).subscribe({
+      next: (blob) => {
+        if (!blob || blob.size === 0) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          this.userImage = reader.result;
+          this.cdr.detectChanges();
+        };
+        reader.readAsDataURL(blob);
       }
     });
   }
 
-  //  USER ORDERS
+  // USER ORDERS
   loadUserOrders() {
-    this.orderService.getOrdersByUser(this.userId).subscribe({
-      next: (res: any) => {
-        this.orders = Array.isArray(res) ? [...res] : [];
-        this.cdr.detectChanges();
-      }
+    this.orderService.getOrdersByUser(this.userId).subscribe(res => {
+      this.orders = Array.isArray(res) ? res : [];
+      this.cdr.detectChanges();
     });
   }
 
   // ADMIN USERS
-  loadUsers() {
-    this.userService.getUsers().subscribe({
-      next: (res: any) => {
-        this.users = Array.isArray(res) ? [...res] : [];
-        this.cdr.detectChanges();
-      }
-    });
-  }
+ loadUsers() {
+  this.userService.getUsers().subscribe(res => {
+    this.users = Array.isArray(res) ? res : [];
 
-  
+   
+    this.users.forEach(user => {
+      this.userService.getUserImage(user.id).subscribe({
+        next: (blob) => {
+          if (blob && blob.size > 0) {
+            const reader = new FileReader(); //its converts blob to url format
+            reader.onload = () => {
+              user.imageUrl = reader.result;
+              this.cdr.detectChanges();
+            };
+            reader.readAsDataURL(blob); //
+          }
+        },
+        error: () => {
+          user.imageUrl = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+        }
+      });
+    });
+
+    this.cdr.detectChanges();
+  });
+}
+
+  // ADMIN VIEW ORDERS
   viewOrders(user: any) {
     this.selectedUser = user;
     this.showAdminOrders = true;
 
-    this.orderService.getOrdersByUser(user.id).subscribe({
-      next: (res: any) => {
-        this.selectedOrders = Array.isArray(res) ? [...res] : [];
-      }
+    this.orderService.getOrdersByUser(user.id).subscribe(res => {
+      this.selectedOrders = Array.isArray(res) ? res : [];
+      this.cdr.detectChanges();
     });
-  }
-
-  clearOrders() {
-    this.selectedUser = null;
-    this.selectedOrders = [];
-    this.showAdminOrders = false;
   }
 
   deleteOrderForAdmin(orderId: number) {
     if (!this.selectedUser) return;
 
-    this.orderService.deleteOrder(this.selectedUser.id, orderId).subscribe({
-      next: () => this.viewOrders(this.selectedUser)
+    this.orderService.deleteOrder(this.selectedUser.id, orderId).subscribe(() => {
+      this.selectedOrders = this.selectedOrders.filter(o => o.id !== orderId);
     });
   }
 
-  //  EDIT PROFILE
+  // EDIT PROFILE
   startEditUser() {
-    this.editingUser = { ...this.user }; 
+    this.editingUser = { ...this.user };
     this.showEditForm = true;
   }
 
   updateUserDetails() {
-    this.userService.updateUser(this.userId, this.editingUser).subscribe({
-      next: () => {
-        this.user = { ...this.editingUser };
-        this.showEditForm = false;
-      }
+    this.userService.updateUser(this.userId, this.editingUser).subscribe(() => {
+      this.user = { ...this.editingUser };
+      this.showEditForm = false;
+      this.cdr.detectChanges();
     });
   }
 
-  //  ADD ORDER
+  // ADD ORDER
   startAddOrder() {
     this.showAddOrderForm = true;
     this.newOrder = { product: '', price: 0 };
+    this.isAddingOrder = false;
   }
 
-  addOrder() {
-    this.orderService.createOrder(this.userId, this.newOrder).subscribe({
-      next: (res) => {
-        this.orders = [...this.orders, res];
-        this.showAddOrderForm = false;
-      }
-    });
-  }
+addOrder() {
+  if (this.isAddingOrder) return;
 
-  // DELETE USER ORDER
+  this.isAddingOrder = true;
+
+  this.orderService.createOrder(this.userId, this.newOrder).subscribe({
+    next: () => {
+      this.loadUserOrders();   //  always safe
+      this.resetAddDialog();
+    },
+    error: (err) => {
+      console.error(err);
+      this.resetAddDialog();
+    }
+  });
+}
+get isAddDisabled(): boolean {
+  return this.isAddingOrder || !this.newOrder.product || !this.newOrder.price;
+}
+  // DELETE ORDER (FIXED)
   deleteOrder(orderId: number) {
-    this.orderService.deleteOrder(this.userId, orderId).subscribe({
-      next: () => {
-        this.orders = this.orders.filter(o => o.id !== orderId);
-      }
+    if (this.isDeletingOrder) return;
+
+    this.isDeletingOrder = true;
+
+    this.orderService.deleteOrder(this.userId, orderId).subscribe(() => {
+      this.orders = this.orders.filter(o => o.id !== orderId);
+      this.isDeletingOrder = false;
+      this.cdr.detectChanges();
     });
   }
 
   // DELETE USER
   deleteUser(userId: number) {
-    this.userService.deleteUser(userId).subscribe({
-      next: () => {
-        this.users = this.users.filter(u => u.id !== userId);
-      }
+    this.userService.deleteUser(userId).subscribe(() => {
+      this.users = this.users.filter(u => u.id !== userId);
     });
   }
 
-  //  LOGOUT
+  onImageError(event: any) {
+    event.target.src = 'assets/default-user.png';
+  }
+
+resetAddDialog() {
+  setTimeout(() => {
+    this.showAddOrderForm = false;
+    this.isAddingOrder = false;
+    this.newOrder = { product: '', price: 0 };
+  }, 0);
+}
+
   logout() {
     localStorage.clear();
     this.router.navigate(['/login']);
